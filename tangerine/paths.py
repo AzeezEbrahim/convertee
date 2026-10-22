@@ -1,4 +1,4 @@
-"""Filesystem locations used across Tangerine for Windows."""
+"""Filesystem locations used across Tangerine (Windows and Linux)."""
 
 import os
 import sys
@@ -25,8 +25,12 @@ def tools_dir() -> Path:
 
 
 def data_dir() -> Path:
-    base = os.environ.get("APPDATA") or str(Path.home() / "AppData" / "Roaming")
-    path = Path(base) / APP_NAME
+    if os.name == "nt":
+        base = os.environ.get("APPDATA") or str(Path.home() / "AppData" / "Roaming")
+        path = Path(base) / APP_NAME
+    else:
+        base = os.environ.get("XDG_CONFIG_HOME") or str(Path.home() / ".config")
+        path = Path(base) / "tangerine"
     path.mkdir(parents=True, exist_ok=True)
     return path
 
@@ -40,7 +44,8 @@ def log_file() -> Path:
 
 
 def icon_path() -> Path:
-    return assets_dir() / "tray.ico"
+    # Linux trays (StatusNotifierItem) take the PNG; Windows keeps the ICO.
+    return assets_dir() / ("tray.ico" if os.name == "nt" else "tray.png")
 
 
 def icon_png() -> Path:

@@ -16,12 +16,15 @@ from __future__ import annotations
 import ctypes
 import logging
 import os
+import sys
 import threading
 from ctypes import wintypes
 
 log = logging.getLogger("tangerine")
 
-user32 = ctypes.windll.user32
+# Linux has no Explorer: foreground_hwnd() fails soft to None, so the
+# selection-based triggers stay idle and the file manager scripts take over.
+user32 = ctypes.windll.user32 if sys.platform == "win32" else None
 
 EXPLORER_CLASSES = {"CabinetWClass", "ExploreWClass"}
 

@@ -14,6 +14,11 @@ import pytest
 
 from tangerine import context
 
+import sys as _sys
+
+pytestmark = pytest.mark.skipif(
+    _sys.platform != "win32", reason="Win32 foreground probes (Linux: tests/test_x11.py)")
+
 SMALL_FRAME = (100, 100, 900, 700)
 MONITOR = (0, 0, 1920, 1080)
 

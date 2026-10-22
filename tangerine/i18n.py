@@ -11,6 +11,7 @@ and follow the chain *current language -> English -> the key itself*.
 
 from __future__ import annotations
 
+import sys
 import logging
 
 from PySide6.QtCore import QLocale
@@ -1421,6 +1422,121 @@ TRANSLATIONS["es"].update({
 })
 
 
+# Short petal labels: the wheel prints these, the hub pill shows the full name
+# (as in the macOS app: "ADD BG" on the petal, "Add Background" when hovered).
+TRANSLATIONS["en"].update({
+    "tool.short.arc.extract": "Extract",
+    "tool.short.aud.bleep": "Bleep",
+    "tool.short.aud.channels": "Channels",
+    "tool.short.aud.compress": "Compress",
+    "tool.short.aud.metadata": "Metadata",
+    "tool.short.aud.normalize": "Normalize",
+    "tool.short.aud.trim": "Trim",
+    "tool.short.aud.visualizer": "Visualizer",
+    "tool.short.doc.compress": "Compress",
+    "tool.short.gif.metadata": "Metadata",
+    "tool.short.img.annotate": "Annotate",
+    "tool.short.img.background": "Add BG",
+    "tool.short.img.collage": "Collage",
+    "tool.short.img.compress": "Compress",
+    "tool.short.img.crop": "Crop",
+    "tool.short.img.edit": "Edit",
+    "tool.short.img.metadata": "Metadata",
+    "tool.short.img.pdf": "PDF",
+    "tool.short.img.redact": "Redact",
+    "tool.short.pdf.compress": "Compress",
+    "tool.short.pdf.merge": "Merge",
+    "tool.short.pdf.metadata": "Metadata",
+    "tool.short.pdf.qr": "Read QR",
+    "tool.short.pdf.split": "Split",
+    "tool.short.qr.read": "Read QR",
+    "tool.short.vid.compress": "Compress",
+    "tool.short.vid.crop": "Crop",
+    "tool.short.vid.join": "Join",
+    "tool.short.vid.metadata": "Metadata",
+    "tool.short.vid.redact": "Redact",
+    "tool.short.vid.removeaudio": "Mute",
+    "tool.short.vid.snapshots": "Snapshot",
+    "tool.short.vid.speed": "Speed",
+    "tool.short.vid.split": "Split",
+    "tool.short.vid.trim": "Trim",
+})
+TRANSLATIONS["es"].update({
+    "tool.short.arc.extract": "Extraer",
+    "tool.short.aud.bleep": "Silenciar",
+    "tool.short.aud.channels": "Canales",
+    "tool.short.aud.compress": "Comprimir",
+    "tool.short.aud.metadata": "Metadatos",
+    "tool.short.aud.normalize": "Normalizar",
+    "tool.short.aud.trim": "Recortar",
+    "tool.short.aud.visualizer": "Visualizar",
+    "tool.short.doc.compress": "Comprimir",
+    "tool.short.gif.metadata": "Metadatos",
+    "tool.short.img.annotate": "Anotar",
+    "tool.short.img.background": "Fondo",
+    "tool.short.img.collage": "Collage",
+    "tool.short.img.compress": "Comprimir",
+    "tool.short.img.crop": "Recortar",
+    "tool.short.img.edit": "Editar",
+    "tool.short.img.metadata": "Metadatos",
+    "tool.short.img.pdf": "PDF",
+    "tool.short.img.redact": "Censurar",
+    "tool.short.pdf.compress": "Comprimir",
+    "tool.short.pdf.merge": "Unir",
+    "tool.short.pdf.metadata": "Metadatos",
+    "tool.short.pdf.qr": "Leer QR",
+    "tool.short.pdf.split": "Dividir",
+    "tool.short.qr.read": "Leer QR",
+    "tool.short.vid.compress": "Comprimir",
+    "tool.short.vid.crop": "Recortar",
+    "tool.short.vid.join": "Unir",
+    "tool.short.vid.metadata": "Metadatos",
+    "tool.short.vid.redact": "Censurar",
+    "tool.short.vid.removeaudio": "Sin audio",
+    "tool.short.vid.snapshots": "Capturas",
+    "tool.short.vid.speed": "Velocidad",
+    "tool.short.vid.split": "Dividir",
+    "tool.short.vid.trim": "Recortar",
+})
+
+
+if sys.platform != "win32":
+    # Linux wording: Files (Nautilus) scripts replace Explorer's Send to, and
+    # RAR support comes from rar/unrar or 7-Zip instead of WinRAR.
+    TRANSLATIONS["en"].update({
+        "tray.welcome": (
+            "Drag files from Files (or any app) while holding Shift to convert them.\n"
+            "Hold Alt+Shift instead for file tools like Compress, Crop, or Trim."
+        ),
+        "err.rar_missing_reader": "Install unrar or 7-Zip (sudo apt install unrar p7zip-full) to read RAR archives.",
+        "err.rar_missing_writer": "Install rar (sudo apt install rar) to create RAR archives.",
+        "pdf.order.received": "Order received from Files",
+        "pdf.order.hint": "Files does not guarantee Ctrl-click chronology. Use Manual for an exact sequence.",
+        "shell.title": "Files (Nautilus)",
+        "shell.hint": "Right-click files → Scripts → Tangerine → Convert…, Tools…, or Create PDF from images….",
+        "shell.repair": "Install / repair Files integration",
+        "shell.source": "Files integration is not available here.",
+        "shell.ready": "Tangerine scripts are installed in Files (right-click → Scripts → Tangerine).",
+        "settings.general.autostart": "Start Tangerine when I log in",
+    })
+    TRANSLATIONS["es"].update({
+        "tray.welcome": (
+            "Arrastra archivos desde Archivos (o cualquier aplicación) manteniendo Shift para convertirlos.\n"
+            "Mantén Alt+Shift para herramientas como Comprimir, Recortar o Censurar."
+        ),
+        "err.rar_missing_reader": "Instala unrar o 7-Zip (sudo apt install unrar p7zip-full) para leer archivos RAR.",
+        "err.rar_missing_writer": "Instala rar (sudo apt install rar) para crear archivos RAR.",
+        "pdf.order.received": "Orden recibido de Archivos",
+        "pdf.order.hint": "Archivos no garantiza la cronología de Ctrl+clic. Usa Manual para fijar una secuencia exacta.",
+        "shell.title": "Archivos (Nautilus)",
+        "shell.hint": "Clic derecho en archivos → Scripts → Tangerine → Convert…, Tools… o Create PDF from images….",
+        "shell.repair": "Instalar / reparar integración con Archivos",
+        "shell.source": "La integración con Archivos no está disponible aquí.",
+        "shell.ready": "Los scripts de Tangerine están instalados en Archivos (clic derecho → Scripts → Tangerine).",
+        "settings.general.autostart": "Abrir Tangerine al iniciar sesión",
+    })
+
+
 def current_language() -> str:
     """The effective language code currently used for lookups."""
     return resolve_language()
@@ -1455,12 +1571,37 @@ def remove_listener(callback) -> None:
         _listeners.remove(callback)
 
 
+def apply_number_locale() -> None:
+    """Format numbers in the interface language when the system differs.
+
+    Qt formats spin boxes with the system numeric locale. On a system whose
+    LC_NUMERIC is, say, ar_SA, an English interface would otherwise show
+    Arabic-Indic digits ("٠ px") next to Latin labels.
+    """
+    try:
+        code = current_language()
+        system = QLocale.system()
+        name = system.name()
+        if name.split("_")[0].lower() != code:
+            QLocale.setDefault(QLocale(code))
+        elif sys.platform == "win32":
+            QLocale.setDefault(system)
+        else:
+            # On Unix the system locale mixes categories: its name follows
+            # LANG/LC_MESSAGES while digits follow LC_NUMERIC. Rebuild it
+            # from the name so en_US really formats numbers as en_US.
+            QLocale.setDefault(QLocale(name))
+    except Exception:
+        log.debug("Could not apply the number locale", exc_info=True)
+
+
 def set_language(code: str) -> None:
     """Persist *code* and notify every registered listener."""
     code = str(code or DEFAULT_LANGUAGE)
     settings = _settings()
     settings.set("language", code)
     settings.save()
+    apply_number_locale()
     for callback in list(_listeners):
         try:
             callback(code)

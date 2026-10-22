@@ -30,7 +30,9 @@ reportlab
 # Test-only helper for generating QR fixtures
 segno
 # Explorer selection for the Shift+Enter keyboard trigger (Shell.Application COM)
-comtypes>=1.4
+comtypes>=1.4; sys_platform == "win32"
+# Linux: X11 pointer/modifier state and the XdndSelection watch (tangerine/x11.py)
+python-xlib>=0.33; sys_platform == "linux"
 
 # ---------------------------------------------------------------------------
 # External tools (installed separately, not through pip)

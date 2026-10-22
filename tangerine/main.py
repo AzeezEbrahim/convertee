@@ -30,6 +30,14 @@ def _write_crash_log(message: str) -> None:
 def _show_error(message: str) -> None:
     if os.environ.get("QT_QPA_PLATFORM") == "offscreen":
         return
+    if sys.platform != "win32":
+        print(message, file=sys.stderr)
+        try:
+            if QApplication.instance() is not None:
+                QMessageBox.critical(None, "Tangerine", message)
+        except Exception:
+            pass
+        return
     try:
         ctypes.windll.user32.MessageBoxW(None, message, "Tangerine", 0x10)
     except Exception:
@@ -147,7 +155,10 @@ class Controller(QObject):
             items = []
             for tool in catalog.tools_for(sources):
                 label = i18n.tr("tool." + tool.id)
-                items.append(FanItem(tool.id, label, kind="tool"))
+                short = i18n.tr("tool.short." + tool.id)
+                if short == "tool.short." + tool.id:
+                    short = ""
+                items.append(FanItem(tool.id, label, kind="tool", short=short))
                 self._labels[tool.id] = label
             return items
         items = []
@@ -315,6 +326,14 @@ class Controller(QObject):
         from .image_pdf import PdfOptions, is_pdf_image
         from . import engines, progress
         from PySide6.QtGui import QCursor
+        if request.get("action") == "quit":
+            self._quit()
+            return
+        if request.get("action") == "wheel":
+            files = [p for p in request["paths"] if Path(p).exists()]
+            if files:
+                self.monitor.open_sticky(QCursor.pos(), files, request["mode"])
+            return
         files = [Path(p) for p in request["paths"]]
         if not files:
             self.open_images_pdf(order=request["order"])
@@ -388,10 +407,13 @@ def _run():
     app.setOrganizationName("Tangerine")
     app.setWindowIcon(QIcon(str(paths.icon_path())))
     app.setQuitOnLastWindowClosed(False)
+    i18n.apply_number_locale()
     theme.apply_app_theme()
 
     if request is not None and forward_request(request, 300):
         return 0
+    if request is not None and request.get("action") == "quit":
+        return 0  # nothing running: never start just to quit
 
     if not QSystemTrayIcon.isSystemTrayAvailable():
         log.error("No system tray available")

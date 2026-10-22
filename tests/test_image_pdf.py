@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -319,6 +320,7 @@ def test_cancel_during_publish_retry_cleans_temp_and_reservation(tmp_path, monke
     assert list(tmp_path.glob(".*.tmp")) == []
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="WinError sharing-violation semantics")
 def test_publish_retry_does_not_delete_replaced_foreign_reservation(tmp_path, monkeypatch):
     source = _write_rgb(tmp_path / "foreign.png")
     output = tmp_path / "foreign.pdf"

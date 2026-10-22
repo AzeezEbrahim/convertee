@@ -11,6 +11,7 @@ the pointer hovers the card.
 
 from __future__ import annotations
 
+import sys
 import logging
 from pathlib import Path
 
@@ -34,11 +35,13 @@ log = logging.getLogger("tangerine")
 
 _ACTIVE: set["ProgressWindow"] = set()
 
-WINDOW_WIDTH = 560
-CARD_RADIUS = 22.0
+# Compact card like the macOS app: chip + left-aligned title, file name, a
+# thin orange bar.
+WINDOW_WIDTH = 420
+CARD_RADIUS = 18.0
 SHADOW_MARGIN = 14
-CHIP_SIZE = 34
-BAR_HEIGHT = 10
+CHIP_SIZE = 26
+BAR_HEIGHT = 6
 ANCHOR_GAP = 18
 
 
@@ -175,9 +178,12 @@ class ProgressWindow(QWidget):
         self.outputs: list[Path] = []
         self.failed = False
         self._anchor = QPoint(anchor) if anchor is not None else None
-        self.setWindowFlags(
-            Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
-        )
+        flags = Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+        if sys.platform.startswith("linux"):
+            # A HUD card, not an app window: no dock/Alt+Tab entry, no window
+            # manager placement or animation, exactly at its anchor.
+            flags |= Qt.Tool | Qt.X11BypassWindowManagerHint
+        self.setWindowFlags(flags)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setFixedWidth(WINDOW_WIDTH)
         self.setWindowTitle(title)
@@ -191,20 +197,21 @@ class ProgressWindow(QWidget):
 
         layout = QVBoxLayout(self.card)
         layout.setContentsMargins(
-            SHADOW_MARGIN + 18, SHADOW_MARGIN + 18, SHADOW_MARGIN + 18,
-            SHADOW_MARGIN + 20)
-        layout.setSpacing(10)
+            SHADOW_MARGIN + 16, SHADOW_MARGIN + 14, SHADOW_MARGIN + 18,
+            SHADOW_MARGIN + 16)
+        layout.setSpacing(8)
 
-        header = QGridLayout()
+        header = QHBoxLayout()
         header.setContentsMargins(0, 0, 0, 0)
+        header.setSpacing(10)
         close_chip = _CloseChip(self.card)
         close_chip.clicked.connect(self.close)
-        header.addWidget(close_chip, 0, 0, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        header.addWidget(close_chip, 0, Qt.AlignmentFlag.AlignVCenter)
         self.title_label = QLabel(title)
-        self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.title_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         self.title_label.setStyleSheet(
-            f"font-weight: 700; font-size: 17px; color: {palette['text']};")
-        header.addWidget(self.title_label, 0, 0, Qt.AlignmentFlag.AlignCenter)
+            f"font-weight: 700; font-size: 15px; color: {palette['text']};")
+        header.addWidget(self.title_label, 1)
         layout.addLayout(header)
 
         self.status_label = QLabel(i18n.tr("progress.starting"))

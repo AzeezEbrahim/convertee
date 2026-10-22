@@ -22,6 +22,10 @@ from . import settings
 from .media import ffmpeg_path, ffprobe_path, rar_path, unrar_path
 from . import i18n, paths, theme, tool_defaults
 
+import logging
+
+log = logging.getLogger("tangerine")
+
 _WINDOW = None
 
 
@@ -310,6 +314,27 @@ class SettingsWindow(QWidget):
         self._fullscreen_box.toggled.connect(_fullscreen_changed)
         layout.addWidget(self._fullscreen_box)
 
+        import sys
+
+        if sys.platform != "win32":
+            from . import linux_shell
+
+            self._autostart_box = QCheckBox(i18n.tr("settings.general.autostart"))
+            self._autostart_box.setChecked(linux_shell.autostart_enabled())
+
+            def _autostart_changed(checked):
+                try:
+                    if checked:
+                        linux_shell.register_shell(autostart=True)
+                    else:
+                        linux_shell.remove_autostart()
+                except Exception:
+                    log.exception("Could not change start at login")
+                    self._autostart_box.setChecked(linux_shell.autostart_enabled())
+
+            self._autostart_box.toggled.connect(_autostart_changed)
+            layout.addWidget(self._autostart_box)
+
         fullscreen_hint = QLabel(i18n.tr("settings.general.fullscreen_hint"))
         fullscreen_hint.setWordWrap(True)
         fullscreen_hint.setObjectName("dim")
@@ -340,7 +365,9 @@ class SettingsWindow(QWidget):
 
     def _repair_explorer(self):
         import sys
-        if not getattr(sys, "frozen", False):
+        # Linux installs run from source: the Nautilus scripts point at the
+        # launcher, so they can be (re)installed from here too.
+        if sys.platform == "win32" and not getattr(sys, "frozen", False):
             self._explorer_status.setText(i18n.tr("shell.source"))
             return
         try:
@@ -553,8 +580,11 @@ class SettingsWindow(QWidget):
     def _open_folder(self):
         import subprocess
 
+        import sys
+
         data = paths.data_dir()
-        subprocess.Popen(["explorer", str(data)])
+        opener = "explorer" if sys.platform == "win32" else "xdg-open"
+        subprocess.Popen([opener, str(data)])
 
     def _reset(self):
         confirm = QMessageBox.question(

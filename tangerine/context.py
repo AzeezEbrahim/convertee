@@ -35,6 +35,7 @@ from __future__ import annotations
 import ctypes
 import logging
 import os
+import sys
 import time
 from ctypes import wintypes
 
@@ -42,8 +43,9 @@ from . import settings
 
 log = logging.getLogger("tangerine")
 
-user32 = ctypes.windll.user32
-dwmapi = ctypes.windll.dwmapi
+IS_WINDOWS = sys.platform == "win32"
+user32 = ctypes.windll.user32 if IS_WINDOWS else None
+dwmapi = ctypes.windll.dwmapi if IS_WINDOWS else None
 
 DWMWA_EXTENDED_FRAME_BOUNDS = 9
 MONITOR_DEFAULTTONEAREST = 2
@@ -202,6 +204,10 @@ def _covers_monitor(hwnd: int) -> bool:
 
 
 def _probe() -> bool:
+    if not IS_WINDOWS:
+        from . import x11
+
+        return x11.session().wheel_allowed()
     hwnd = _foreground_window()
     if not hwnd:
         return True

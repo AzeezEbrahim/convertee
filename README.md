@@ -1,5 +1,7 @@
 # Tangerine for Windows
 
+> **Linux:** this branch also runs on Ubuntu (X11). See [README-LINUX.md](README-LINUX.md).
+
 A drag-to-convert desktop tray utility for Windows 11. Hold **Shift** while
 dragging files out of File Explorer and a radial wheel appears under the
 cursor: drop the files onto a petal to convert them. Hold **Alt+Shift**

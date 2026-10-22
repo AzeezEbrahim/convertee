@@ -83,6 +83,19 @@ HUD_LIGHT = {
     "peach": "#FFD9C2",
     "track": (0, 0, 0, 60),
     "icon": "#3A2416",
+    # Wheel (measured from the macOS app's press screenshots): cream glass
+    # petals over a thinner translucent rind, a deep tangerine hover and a
+    # frosted pill in the hub.
+    "rind": (255, 238, 222, 120),
+    "petal": (255, 240, 226, 214),
+    "petal_edge": (255, 255, 255, 120),
+    "ink": "#17110C",
+    "hover_outer": "#F26A1F",
+    "hover_inner": "#DC500C",
+    "hover_ink": "#FFFFFF",
+    "capsule": (244, 240, 236, 228),
+    "capsule_ink": "#231A14",
+    "shadow": (70, 34, 8, 64),
 }
 
 HUD_DARK = {
@@ -92,7 +105,55 @@ HUD_DARK = {
     "peach": "#3A2A20",
     "track": (255, 255, 255, 45),
     "icon": "#F3E7DE",
+    "rind": (28, 24, 21, 140),
+    "petal": (62, 54, 48, 214),
+    "petal_edge": (255, 255, 255, 34),
+    "ink": "#F8F0EA",
+    "hover_outer": "#F26A1F",
+    "hover_inner": "#DC500C",
+    "hover_ink": "#FFFFFF",
+    "capsule": (34, 29, 26, 232),
+    "capsule_ink": "#F3E7DE",
+    "shadow": (0, 0, 0, 120),
 }
+
+# Interface font. macOS uses SF Pro and Windows Segoe UI; Linux bundles Inter
+# (SIL OFL, assets/fonts), the closest open design to SF Pro.
+_FONT_STACK_WINDOWS = "'Segoe UI Variable Text', 'Segoe UI', sans-serif"
+UI_FAMILY: str | None = None
+_fonts_loaded = False
+
+
+def ensure_fonts() -> str | None:
+    """Register the bundled fonts once (Linux); return the UI family or None."""
+    global UI_FAMILY, _fonts_loaded
+    if _fonts_loaded:
+        return UI_FAMILY
+    _fonts_loaded = True
+    import sys
+
+    if sys.platform == "win32":
+        return None
+    try:
+        from PySide6.QtGui import QFontDatabase
+
+        from . import paths
+
+        families: set[str] = set()
+        for font in sorted((paths.assets_dir() / "fonts").glob("*.ttf")):
+            font_id = QFontDatabase.addApplicationFont(str(font))
+            if font_id >= 0:
+                families.update(QFontDatabase.applicationFontFamilies(font_id))
+        if "Inter" in families:
+            UI_FAMILY = "Inter"
+    except Exception:
+        log.debug("Bundled fonts unavailable", exc_info=True)
+    return UI_FAMILY
+
+
+def font_stack() -> str:
+    family = ensure_fonts()
+    return f"'{family}', {_FONT_STACK_WINDOWS}" if family else _FONT_STACK_WINDOWS
 
 _theme_listeners: list = []
 
@@ -207,6 +268,13 @@ def apply_app_theme() -> bool:
     if app is None:
         return False
     dark = is_dark()
+    family = ensure_fonts()
+    if family:
+        from PySide6.QtGui import QFont
+
+        font = QFont(family)
+        font.setPointSizeF(app.font().pointSizeF())
+        app.setFont(font)
     app.setStyleSheet(stylesheet(dark))
     refresh_listeners(dark)
     return True
@@ -225,7 +293,7 @@ def stylesheet(dark: bool) -> str:
     return f"""
     QWidget {{
         color: {p['text']};
-        font-family: 'Segoe UI Variable Text', 'Segoe UI', sans-serif;
+        font-family: {font_stack()};
         font-size: 13px;
     }}
     QMainWindow, QDialog, #SettingsRoot {{

@@ -128,8 +128,12 @@ def fixtures() -> Path:
             ])
         odd = FIXTURES / "clip_odd.avi"
         if not odd.exists():
+            # Older ffmpeg (4.4 on Ubuntu 22.04) rounds lavfi colour sources
+            # to even sizes; a still image keeps the odd 321x241 frame.
+            frame = FIXTURES / "clip_odd_frame.png"
+            Image.new("RGB", (321, 241), "orange").save(frame)
             _run_ffmpeg([
-                "-f", "lavfi", "-i", "color=c=orange:s=321x241:r=5:d=1",
+                "-loop", "1", "-i", str(frame), "-r", "5", "-t", "1",
                 "-c:v", "rawvideo", "-pix_fmt", "bgr24", str(odd),
             ])
     return FIXTURES

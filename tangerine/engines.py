@@ -27,7 +27,7 @@ from .catalog import (
 )
 from .media import (
     CREATE_NO_WINDOW, MediaInfo, ffmpeg_path, probe, run_ffmpeg, run_process,
-    unrar_path, rar_path,
+    unrar_path, rar_path, sevenzip_path,
 )
 
 try:
@@ -951,11 +951,16 @@ def _extract_archive(path: Path, dest: Path, ctx: Ctx) -> None:
         return
     if suffix == ".rar":
         unrar = unrar_path()
-        if not unrar:
+        sevenzip = None if unrar else sevenzip_path()
+        if not unrar and not sevenzip:
             raise EngineError(i18n.tr("err.rar_missing_reader"))
         if ctx.cancelled():
             raise EngineError(i18n.tr("err.cancelled"))
-        code = run_process([unrar, "x", "-y", str(path), str(dest) + os.sep], cancel=ctx.cancel)
+        if unrar:
+            args = [unrar, "x", "-y", str(path), str(dest) + os.sep]
+        else:
+            args = [sevenzip, "x", "-y", f"-o{dest}", str(path)]
+        code = run_process(args, cancel=ctx.cancel)
         if code == -9:
             raise EngineError(i18n.tr("err.cancelled"))
         if code != 0:
@@ -1036,7 +1041,7 @@ def _create_archive(dest_archive: Path, source_dir: Path, ctx: Ctx) -> None:
         if not rar:
             raise EngineError(i18n.tr("err.rar_missing_writer"))
         names = [
-            f".\\{entry.name}" if entry.name.startswith(("-", "@")) else entry.name
+            f".{os.sep}{entry.name}" if entry.name.startswith(("-", "@")) else entry.name
             for entry in entries
         ]
         if not names:

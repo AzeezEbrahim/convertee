@@ -8,7 +8,11 @@ import logging
 import os
 from pathlib import Path
 import sys
-import winreg
+
+try:
+    import winreg
+except ImportError:  # Linux: see linux_shell
+    winreg = None
 
 from . import paths
 
@@ -147,3 +151,8 @@ def unregister_shell():
         if link.exists() and Path(shell.CreateShortcut(str(link)).TargetPath).name.casefold() == "tangerine.exe":
             link.unlink()
     _notify()
+
+
+if sys.platform != "win32":
+    # Nautilus scripts, launcher and autostart instead of the registry.
+    from .linux_shell import register_shell, unregister_shell  # noqa: E402,F811

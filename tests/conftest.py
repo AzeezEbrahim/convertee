@@ -92,6 +92,17 @@ def cleanup_test_qt_windows(monkeypatch):
         pytest.fail(f"Qt test windows survived deferred deletion: {names}")
 
 
+@pytest.fixture(autouse=True)
+def _scripted_drag_session(request, monkeypatch):
+    """Monitor tests script Win32-style input; on X11 they also need the
+    XDND session gate to report a drag, which a headless run never sees."""
+    if sys.platform != "win32" and request.module.__name__.startswith("test_monitor"):
+        from tangerine.monitor import DragMonitor
+
+        monkeypatch.setattr(DragMonitor, "_drag_session_started", lambda self: True)
+    yield
+
+
 @pytest.fixture(scope="session")
 def qapp():
     """Return the process-wide QApplication, creating it on first use."""
@@ -102,6 +113,11 @@ def qapp():
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
+    # Same as app start-up: numbers follow the interface language even on a
+    # system whose numeric locale differs (e.g. LC_NUMERIC=ar_SA).
+    from tangerine import i18n
+
+    i18n.apply_number_locale()
     font_probes = []
     from PySide6.QtGui import QFont, QFontDatabase
     # Qt's Windows offscreen plugin has no system font database. Load installed

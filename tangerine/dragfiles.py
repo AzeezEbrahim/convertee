@@ -8,29 +8,37 @@ URLs before the pointer enters the drop target) works here with CF_HDROP.
 from __future__ import annotations
 
 import ctypes
+import sys
 from ctypes import POINTER, byref, c_void_p, create_unicode_buffer, wintypes
 
-ole32 = ctypes.windll.ole32
-shell32 = ctypes.windll.shell32
-user32 = ctypes.windll.user32
+IS_WINDOWS = sys.platform == "win32"
 
 CF_HDROP = 15
 DVASPECT_CONTENT = 1
 TYMED_HGLOBAL = 1
 DRAG_LOOP_FORMAT = "InShellDragLoop"
 
-shell32.DragQueryFileW.argtypes = [
-    wintypes.HANDLE,
-    wintypes.UINT,
-    ctypes.c_wchar_p,
-    wintypes.UINT,
-]
-shell32.DragQueryFileW.restype = wintypes.UINT
+if IS_WINDOWS:
+    ole32 = ctypes.windll.ole32
+    shell32 = ctypes.windll.shell32
+    user32 = ctypes.windll.user32
 
-user32.RegisterClipboardFormatW.argtypes = [ctypes.c_wchar_p]
-user32.RegisterClipboardFormatW.restype = wintypes.UINT
+    shell32.DragQueryFileW.argtypes = [
+        wintypes.HANDLE,
+        wintypes.UINT,
+        ctypes.c_wchar_p,
+        wintypes.UINT,
+    ]
+    shell32.DragQueryFileW.restype = wintypes.UINT
 
-_IN_SHELL_DRAG_LOOP = user32.RegisterClipboardFormatW(DRAG_LOOP_FORMAT)
+    user32.RegisterClipboardFormatW.argtypes = [ctypes.c_wchar_p]
+    user32.RegisterClipboardFormatW.restype = wintypes.UINT
+
+    _IN_SHELL_DRAG_LOOP = user32.RegisterClipboardFormatW(DRAG_LOOP_FORMAT)
+else:
+    # On X11 the payload of the drag in flight is the XdndSelection.
+    ole32 = shell32 = user32 = None
+    _IN_SHELL_DRAG_LOOP = 0
 
 
 class FORMATETC(ctypes.Structure):
@@ -79,6 +87,11 @@ def current_drag_files(require_drag_loop: bool = True) -> list[str] | None:
     Explorer surface during a held drag, where a plain CF_HDROP read is a
     safe fallback (some Windows builds do not publish the loop format).
     """
+
+    if not IS_WINDOWS:
+        from . import x11
+
+        return x11.session().drag_files()
 
     data_object = c_void_p()
     try:

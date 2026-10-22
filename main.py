@@ -87,7 +87,9 @@ def _smoke_webengine() -> int:
 def _write_webengine_smoke_log(message: str) -> None:
     """Keep diagnostics for the windowless packaged smoke command."""
     try:
-        temp_dir = Path(os.environ.get("TEMP") or Path.home() / "AppData/Local/Temp")
+        import tempfile
+
+        temp_dir = Path(os.environ.get("TEMP") or tempfile.gettempdir())
         (temp_dir / "Tangerine-webengine-smoke.log").write_text(
             message, encoding="utf-8"
         )
@@ -139,8 +141,9 @@ try:
 except Exception as exc:
     message = f"Tangerine failed to start: {exc}\n\n{traceback.format_exc()}"
     try:
-        crash = Path(os.environ.get("APPDATA", "")) / "Tangerine" / "crash.log"
-        crash.parent.mkdir(parents=True, exist_ok=True)
+        from tangerine.paths import data_dir
+
+        crash = data_dir() / "crash.log"
         with crash.open("a", encoding="utf-8") as handle:
             handle.write(message + "\n")
     except Exception:
@@ -149,7 +152,10 @@ except Exception as exc:
         import ctypes
 
         if os.environ.get("QT_QPA_PLATFORM") != "offscreen":
-            ctypes.windll.user32.MessageBoxW(None, message, "Tangerine", 0x10)
+            if sys.platform == "win32":
+                ctypes.windll.user32.MessageBoxW(None, message, "Tangerine", 0x10)
+            else:
+                print(message, file=sys.stderr)
     except Exception:
         pass
     raise SystemExit(1)

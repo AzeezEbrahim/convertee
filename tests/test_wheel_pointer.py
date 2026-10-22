@@ -13,7 +13,7 @@ import pytest
 from PySide6.QtCore import QEvent, QMimeData, QPoint, QPointF, Qt, QUrl
 from PySide6.QtGui import QDragEnterEvent, QKeyEvent, QMouseEvent, QWheelEvent
 
-from tangerine.wheel import FanItem, TangerineWheel
+from tangerine.wheel import FanItem, TangerineWheel, R_IN, R_OUT
 
 
 def _mime(*paths) -> QMimeData:
@@ -25,7 +25,7 @@ def _mime(*paths) -> QMimeData:
 def _petal_point(wheel, index: int, count: int) -> QPointF:
     step = 360.0 / count
     radians = math.radians(-90.0 + (index + 0.5) * step)
-    radius = 167.0  # midway between R_IN (124) and R_OUT (210)
+    radius = (R_IN + R_OUT) / 2.0  # mid-band
     center_x, center_y = wheel.width() / 2.0, wheel.height() / 2.0
     return QPointF(
         center_x + radius * math.cos(radians),

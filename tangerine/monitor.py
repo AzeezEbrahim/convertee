@@ -9,15 +9,25 @@ from __future__ import annotations
 import ctypes
 import math
 import os
+import sys
 import threading
 import time
-from ctypes import wintypes
 
 from PySide6.QtCore import QObject, QPoint, QTimer, Signal
+from PySide6.QtGui import QCursor
 
 from . import context, dragfiles, selection, settings
 
-user32 = ctypes.windll.user32
+IS_WINDOWS = sys.platform == "win32"
+
+if IS_WINDOWS:
+    from ctypes import wintypes
+
+    user32 = ctypes.windll.user32
+else:
+    from . import x11
+
+    user32 = None
 
 VK_LBUTTON = 0x01
 VK_RETURN = 0x0D
@@ -54,8 +64,39 @@ SELECTION_SNAPSHOT_MAX_AGE_S = 4.0
 STICKY_TIMEOUT_S = 15.0  # a pinned wheel fades out after this much time
 
 
+# Virtual-key codes the monitor asks about, as X11 modifier names / keysyms.
+_X11_MODIFIER_VKS = {
+    VK_SHIFT: "shift",
+    VK_CONTROL: "ctrl",
+    VK_MENU: "alt",
+    VK_LWIN: "win",
+    VK_RWIN: "win",
+}
+
+
+def _vk_keysym(vk: int) -> str | None:
+    if vk == VK_RETURN:
+        return "Return"
+    if vk == 0x20:
+        return "space"
+    if 0x30 <= vk <= 0x39 or 0x41 <= vk <= 0x5A:
+        return chr(vk).lower()
+    if 0x70 <= vk <= 0x7B:
+        return f"F{vk - 0x70 + 1}"
+    return None
+
+
 def _is_down(vk: int) -> bool:
-    return bool(user32.GetAsyncKeyState(vk) & 0x8000)
+    if IS_WINDOWS:
+        return bool(user32.GetAsyncKeyState(vk) & 0x8000)
+    session = x11.session()
+    if vk == VK_LBUTTON:
+        return session.button_down()
+    modifier = _X11_MODIFIER_VKS.get(vk)
+    if modifier is not None:
+        return modifier in session.held_modifiers()
+    keysym = _vk_keysym(vk)
+    return bool(keysym) and session.is_key_down(keysym)
 
 
 def _key_vk(name: str) -> int | None:
@@ -104,6 +145,8 @@ class DragMonitor(QObject):
         self._snapshot_pending = False
         self._last_snapshot_poll = 0.0
         self._mods_prev: set[str] = set()
+        self._last_up_seen = time.monotonic()
+        self._press_floor = self._last_up_seen
         self._sticky = False
         self._sticky_since = 0.0
         self._toggle_down = False
@@ -121,6 +164,22 @@ class DragMonitor(QObject):
         self._set_active(False)
         self._cooldown_until = time.monotonic() + DROP_COOLDOWN_S
 
+    def open_sticky(self, pos: QPoint, files: list[str], mode: str) -> None:
+        """Pin a wheel for *files* at *pos* (file manager scripts on Linux).
+
+        It behaves like the hotkey wheel: clicks and keys stay live, a click
+        outside puts it away and it fades after ``STICKY_TIMEOUT_S``.
+        """
+        self._sticky = True
+        self._sticky_since = time.monotonic()
+        # The click that launched the script may still be held: only a new
+        # press counts as a click outside.
+        self._button_down = _is_down(VK_LBUTTON)
+        self._visible = True
+        self._mode = mode
+        self._set_active(True)
+        self.stickyTriggered.emit(pos, list(files), mode)
+
     def sticky_release(self) -> None:
         """The sticky wheel closed itself (petal click or click outside)."""
         if not self._sticky:
@@ -132,6 +191,9 @@ class DragMonitor(QObject):
     # -- polling -------------------------------------------------------
 
     def _cursor(self) -> QPoint:
+        if not IS_WINDOWS:
+            # Qt maps X11 device pixels to its own (scaled) coordinates.
+            return QCursor.pos()
         point = wintypes.POINT()
         user32.GetCursorPos(ctypes.byref(point))
         return QPoint(point.x, point.y)
@@ -177,6 +239,10 @@ class DragMonitor(QObject):
         return self._last_files
 
     def _foreground_allows(self) -> bool:
+        if not IS_WINDOWS:
+            # X11 has no drag-loop flag to fall back from: the XdndSelection
+            # read in dragfiles is already the plain payload read.
+            return False
         hwnd = user32.GetForegroundWindow()
         if not hwnd:
             return False
@@ -187,6 +253,17 @@ class DragMonitor(QObject):
         buffer = ctypes.create_unicode_buffer(256)
         user32.GetClassNameW(hwnd, buffer, 256)
         return buffer.value in FOREGROUND_ALLOWLIST
+
+    def _drag_session_started(self) -> bool:
+        """Whether a drag-and-drop session began during the current press.
+
+        Windows shows the wheel on the held gesture alone (its dragEnter then
+        decides). On X11 the XdndSelection watch filters out button-down
+        movement that is not a drag: text selection, rubber bands, windows.
+        """
+        if IS_WINDOWS:
+            return True
+        return x11.session().drag_started_since(self._press_floor)
 
     def _maybe_snapshot(self, button: bool, forced: bool = False) -> None:
         """Rolling copy of the Explorer selection.
@@ -281,8 +358,11 @@ class DragMonitor(QObject):
             if new_press:
                 self.stickyClicked.emit(cursor)
             return
+        if not button:
+            self._last_up_seen = time.monotonic()
         if button and not self._button_down:
             self._button_down = True
+            self._press_floor = self._last_up_seen
             self._anchor = self._cursor()
             self._last_files = None
             self._last_clip_check = 0.0
@@ -349,6 +429,8 @@ class DragMonitor(QObject):
         if mode is None:
             return
         if not context.wheel_allowed():
+            return
+        if not self._drag_session_started():
             return
         files = self._hydrate_from_snapshot(self._drag_files())
         # The OLE drag payload is not readable on every Windows build while
@@ -475,6 +557,8 @@ class DragMonitor(QObject):
         if time.monotonic() < self._cooldown_until:
             return False
         if time.monotonic() - self._press_started < LONG_PRESS_S:
+            return False
+        if not self._drag_session_started():
             return False
         files = self._hydrate_from_snapshot(self._drag_files())
         if not files:

@@ -13,7 +13,8 @@ from typing import Callable, Iterable
 
 from . import paths
 
-CREATE_NO_WINDOW = 0x08000000
+# Zero off Windows: subprocess rejects any non-zero creationflags on POSIX.
+CREATE_NO_WINDOW = 0x08000000 if os.name == "nt" else 0
 _POPEN_KW = {"creationflags": CREATE_NO_WINDOW} if os.name == "nt" else {}
 
 
@@ -70,17 +71,29 @@ def _winrar_dir() -> Path:
 
 
 def rar_path() -> str | None:
+    if os.name != "nt":
+        return shutil.which("rar")
     exe = _winrar_dir() / "Rar.exe"
     return str(exe) if exe.is_file() else None
 
 
 def unrar_path() -> str | None:
+    if os.name != "nt":
+        # RARLAB's unrar, or rar itself, share WinRAR's command syntax.
+        return shutil.which("unrar") or shutil.which("rar")
     exe = _winrar_dir() / "UnRAR.exe"
     return str(exe) if exe.is_file() else None
 
 
+def sevenzip_path() -> str | None:
+    """p7zip/7-Zip can extract RAR and RAR5 where unrar is not installed."""
+    if os.name == "nt":
+        return None
+    return shutil.which("7z") or shutil.which("7zz")
+
+
 def has_rar_engine() -> bool:
-    return unrar_path() is not None
+    return unrar_path() is not None or sevenzip_path() is not None
 
 
 def run_process(

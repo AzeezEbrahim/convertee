@@ -24,11 +24,22 @@ def server_name() -> str:
 def parse_request(arguments: list[str]) -> dict | None:
     parser = argparse.ArgumentParser(prog="Tangerine")
     parser.add_argument("--images-to-pdf", action="store_true")
+    parser.add_argument("--wheel", choices=("conversion", "tools"))
+    parser.add_argument("--quit", action="store_true", help="Quit the running Tangerine.")
     parser.add_argument("--pdf-order", choices=("name", "received", "manual"), default="name")
     parser.add_argument("--pdf-quick", action="store_true")
     parser.add_argument("--selection-manifest", type=Path)
     parser.add_argument("files", nargs="*")
     args = parser.parse_args(arguments)
+    if args.quit:
+        return validate_request({"id": uuid.uuid4().hex, "action": "quit", "paths": []})
+    if args.wheel:
+        # File manager scripts: open the wheel at the cursor for a selection.
+        files = [str(Path(f).resolve()) for f in args.files]
+        if not files:
+            parser.error("--wheel needs at least one file.")
+        return validate_request({"id": uuid.uuid4().hex, "action": "wheel", "mode": args.wheel,
+                                 "paths": files})
     if not args.images_to_pdf:
         if args.files or args.selection_manifest or args.pdf_quick:
             parser.error("Use --images-to-pdf with image files.")
@@ -51,11 +62,23 @@ def parse_request(arguments: list[str]) -> dict | None:
 
 
 def validate_request(request: object) -> dict:
-    if not isinstance(request, dict) or request.get("action") != "images-to-pdf":
+    if not isinstance(request, dict) or request.get("action") not in ("images-to-pdf", "wheel", "quit"):
         raise ValueError("Unknown Tangerine action.")
+    if request["action"] == "quit":
+        identifier = request.get("id")
+        if not isinstance(identifier, str) or len(identifier) != 32 or any(c not in "0123456789abcdef" for c in identifier):
+            raise ValueError("Invalid request ID.")
+        return {"id": identifier, "action": "quit", "paths": []}
     files = request.get("paths")
     if not isinstance(files, list) or len(files) > 10000 or not all(isinstance(p, str) and p and "\0" not in p for p in files):
         raise ValueError("Invalid image selection.")
+    if request["action"] == "wheel":
+        identifier = request.get("id")
+        if not isinstance(identifier, str) or len(identifier) != 32 or any(c not in "0123456789abcdef" for c in identifier):
+            raise ValueError("Invalid request ID.")
+        if request.get("mode") not in ("conversion", "tools") or not files:
+            raise ValueError("Invalid wheel request.")
+        return {"id": identifier, "action": "wheel", "mode": request["mode"], "paths": files}
     if request.get("order") not in ("name", "received", "manual") or not isinstance(request.get("quick"), bool):
         raise ValueError("Invalid PDF options.")
     identifier = request.get("id")

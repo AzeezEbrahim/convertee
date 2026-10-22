@@ -182,7 +182,7 @@ def available_engines() -> set[str]:
     engines = {name for name, module in _ENGINE_MODULES if _installed(module)}
     if media.ffmpeg_path():
         engines.add("ffmpeg")
-    if media.unrar_path():
+    if media.has_rar_engine():
         engines.add("unrar")
     if media.rar_path():
         engines.add("rar")
