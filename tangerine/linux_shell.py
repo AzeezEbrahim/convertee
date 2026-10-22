@@ -1,7 +1,7 @@
 """Per-user desktop integration on Linux (the Explorer integration's twin).
 
 Windows gets "Send to" shortcuts and a context-menu handler; on GNOME the
-same entry points are Nautilus scripts (right-click -> Scripts -> Tangerine),
+same entry points are Nautilus scripts (right-click -> Scripts -> Convertee),
 an application launcher and an optional autostart entry. Everything lives in
 the user's home directory, needs no root, and every file written here starts
 with a marker line so :func:`unregister_shell` only removes what it owns.
@@ -19,9 +19,13 @@ from . import paths
 
 log = logging.getLogger("tangerine")
 
-MARKER = "# Managed by Tangerine for Linux"
-DESKTOP_ID = "tangerine-linux.desktop"
-SCRIPT_DIR_NAME = "Tangerine"
+MARKER = "# Managed by Convertee"
+DESKTOP_ID = "convertee.desktop"
+SCRIPT_DIR_NAME = "Convertee"
+# Before the rename the same files were written as Tangerine for Linux.
+LEGACY_MARKERS = ("# Managed by Tangerine for Linux",)
+LEGACY_DESKTOP_ID = "tangerine-linux.desktop"
+LEGACY_SCRIPT_DIR_NAME = "Tangerine"
 
 # Script file name -> arguments for the running Tangerine instance.
 SCRIPTS = {
@@ -53,10 +57,10 @@ def autostart_file() -> Path:
 
 
 def launcher_command(executable: str | None = None) -> list[str]:
-    """Command that starts (or reaches) Tangerine from a script or launcher."""
+    """Command that starts (or reaches) Convertee from a script or launcher."""
     if executable:
         return [executable]
-    launcher = os.environ.get("TANGERINE_LAUNCHER")
+    launcher = os.environ.get("CONVERTEE_LAUNCHER") or os.environ.get("TANGERINE_LAUNCHER")
     if launcher:
         return [launcher]
     if getattr(sys, "frozen", False):
@@ -64,16 +68,34 @@ def launcher_command(executable: str | None = None) -> list[str]:
     return [sys.executable, str(paths.app_root() / "main.py")]
 
 
-def _owned(path: Path) -> bool:
+def _owned(path: Path, markers: tuple[str, ...] = (MARKER,)) -> bool:
     try:
-        return MARKER in path.read_text(encoding="utf-8", errors="replace").splitlines()[:3]
+        head = path.read_text(encoding="utf-8", errors="replace").splitlines()[:3]
     except OSError:
         return False
+    return any(marker in head for marker in markers)
+
+
+def remove_legacy() -> None:
+    """Remove the scripts, launcher and autostart written as Tangerine for Linux."""
+    folder = _data_home() / "nautilus" / "scripts" / LEGACY_SCRIPT_DIR_NAME
+    if folder.is_dir():
+        for path in folder.iterdir():
+            if path.is_file() and _owned(path, LEGACY_MARKERS):
+                path.unlink()
+        try:
+            folder.rmdir()
+        except OSError:
+            pass
+    for path in (_data_home() / "applications" / LEGACY_DESKTOP_ID,
+                 _config_home() / "autostart" / LEGACY_DESKTOP_ID):
+        if path.is_file() and _owned(path, LEGACY_MARKERS):
+            path.unlink()
 
 
 def _write(path: Path, text: str, executable: bool = False) -> None:
     if path.exists() and not _owned(path):
-        log.info("Leaving %s alone: it was not created by Tangerine", path)
+        log.info("Leaving %s alone: it was not created by Convertee", path)
         return
     path.parent.mkdir(parents=True, exist_ok=True)
     temp = path.with_name(path.name + ".tmp")
@@ -99,7 +121,7 @@ def _desktop_text(command: list[str], autostart: bool) -> str:
         "[Desktop Entry]",
         MARKER,
         "Type=Application",
-        "Name=Tangerine",
+        "Name=Convertee",
         "Comment=Convert files while you drag them (Shift) and edit them (Alt+Shift)",
         f"Exec={exec_line}",
         f"Icon={paths.assets_dir() / 'icon.png'}",
@@ -114,6 +136,10 @@ def _desktop_text(command: list[str], autostart: bool) -> str:
 
 def register_shell(executable=None, autostart: bool | None = None):
     """Install the Nautilus scripts and the launcher; idempotent."""
+    legacy_autostart = (_config_home() / "autostart" / LEGACY_DESKTOP_ID).is_file()
+    remove_legacy()
+    if autostart is None and legacy_autostart:
+        autostart = True  # keep the choice made before the rename
     command = launcher_command(executable)
     folder = nautilus_scripts_dir()
     folder.mkdir(parents=True, exist_ok=True)
@@ -139,6 +165,7 @@ def remove_autostart() -> None:
 
 
 def unregister_shell():
+    remove_legacy()
     folder = nautilus_scripts_dir()
     for name in SCRIPTS:
         path = folder / name

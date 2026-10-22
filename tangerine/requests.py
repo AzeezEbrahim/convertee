@@ -1,4 +1,4 @@
-"""CLI requests and a per-user local pipe for the existing Tangerine instance."""
+"""CLI requests and a per-user local pipe for the existing Convertee instance."""
 from __future__ import annotations
 
 import argparse
@@ -18,14 +18,14 @@ MAX_REQUEST_BYTES = 8 * 1024 * 1024
 
 def server_name() -> str:
     key = os.path.normcase(str(paths.data_dir().resolve())).encode("utf-8")
-    return "Tangerine-" + hashlib.sha256(key).hexdigest()[:24]
+    return "Convertee-" + hashlib.sha256(key).hexdigest()[:24]
 
 
 def parse_request(arguments: list[str]) -> dict | None:
-    parser = argparse.ArgumentParser(prog="Tangerine")
+    parser = argparse.ArgumentParser(prog="convertee")
     parser.add_argument("--images-to-pdf", action="store_true")
     parser.add_argument("--wheel", choices=("conversion", "tools"))
-    parser.add_argument("--quit", action="store_true", help="Quit the running Tangerine.")
+    parser.add_argument("--quit", action="store_true", help="Quit the running Convertee.")
     parser.add_argument("--pdf-order", choices=("name", "received", "manual"), default="name")
     parser.add_argument("--pdf-quick", action="store_true")
     parser.add_argument("--selection-manifest", type=Path)
@@ -49,7 +49,7 @@ def parse_request(arguments: list[str]) -> dict | None:
         manifest = args.selection_manifest.resolve()
         queue = (paths.data_dir() / "request-queue").resolve()
         if manifest.parent != queue or not manifest.name.startswith("selection-") or manifest.suffix != ".json":
-            raise ValueError("Selection manifest must belong to Tangerine's request queue.")
+            raise ValueError("Selection manifest must belong to Convertee's request queue.")
         if manifest.stat().st_size > MAX_REQUEST_BYTES:
             raise ValueError("Selection manifest is too large.")
         loaded = json.loads(manifest.read_text(encoding="utf-8-sig"))
@@ -63,7 +63,7 @@ def parse_request(arguments: list[str]) -> dict | None:
 
 def validate_request(request: object) -> dict:
     if not isinstance(request, dict) or request.get("action") not in ("images-to-pdf", "wheel", "quit"):
-        raise ValueError("Unknown Tangerine action.")
+        raise ValueError("Unknown Convertee action.")
     if request["action"] == "quit":
         identifier = request.get("id")
         if not isinstance(identifier, str) or len(identifier) != 32 or any(c not in "0123456789abcdef" for c in identifier):

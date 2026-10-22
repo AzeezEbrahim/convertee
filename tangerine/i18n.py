@@ -24,7 +24,7 @@ DEFAULT_LANGUAGE = "en"
 TRANSLATIONS: dict[str, dict[str, str]] = {
     "en": {
         # -- app / wheel / tray -------------------------------------------
-        "app.name": "Tangerine",
+        "app.name": "Convertee",
         "wheel.convert": "Convert",
         "wheel.tools": "Tools",
         "wheel.drop_file": "Drop a file here",
@@ -33,19 +33,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "tray.nothing_active": "Nothing active",
         "tray.settings": "Settings...",
         "tray.check_updates": "Check for Updates...",
-        "tray.quit": "Quit Tangerine",
+        "tray.quit": "Quit Convertee",
         "tray.working": "Working",
-        "tray.tooltip": "Tangerine",
+        "tray.tooltip": "Convertee",
         "tray.welcome": (
             "Drag files from an Explorer window while holding Shift to convert them.\n"
             "Hold Alt+Shift instead for file tools like Compress, Crop, or Trim."
         ),
-        "tray.already_running": "Tangerine is already running.",
+        "tray.already_running": "Convertee is already running.",
         "tray.settings_unavailable": (
             "The settings window is not available in this build."
         ),
         "tray.update_message": (
-            "Tangerine {version} for Windows\n\n"
+            "Convertee {version}\n\n"
             "This is a local build, so update checks are handled manually."
         ),
         "tray.quit_running": "Conversions are still running. Quit anyway?",
@@ -121,7 +121,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "progress.operation_failed": "The operation failed.",
         "progress.output_unconfirmed": "Finished (output not confirmed)",
         # -- settings window ----------------------------------------------
-        "settings.title": "Tangerine Settings",
+        "settings.title": "Convertee Settings",
         "settings.tab.general": "General",
         "settings.tab.wheels": "Wheels",
         "settings.tab.formats": "Formats",
@@ -192,11 +192,11 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "settings.size.1920": "Longest edge 1920 px",
         "settings.size.1280": "Longest edge 1280 px",
         "settings.about.title": (
-            "Tangerine {version} for Windows (build {build})"
+            "Convertee {version} (build {build})"
         ),
         "settings.about.blurb": (
-            "A drag-to-convert companion for File Explorer, rebuilt from the macOS "
-            "Tangerine interaction: hold a modifier while dragging, drop on a petal."
+            "Convert files while you drag them: hold a modifier while dragging, "
+            "drop on a petal. Based on Tangerine for Windows (MIT) and the macOS app Tangerine."
         ),
         "settings.about.not_found": "not found",
         "settings.about.ffmpeg": "FFmpeg",
@@ -209,7 +209,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "settings.about.restore": "Restore Defaults",
         "settings.restore.title": "Restore Defaults",
         "settings.restore.confirm": (
-            "Restore every Tangerine setting to its default value?"
+            "Restore every Convertee setting to its default value?"
         ),
         "settings.restore.done": "Settings restored to defaults.",
         "settings.mask.none": "None",
@@ -500,7 +500,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "dlg.visualizer.bg_none": "Background image: none",
         "dlg.visualizer.bg_named": "Background image: {name}",
         "dlg.visualizer.hint": (
-            "The full recording is rendered as a Tangerine-orange waveform "
+            "The full recording is rendered as an orange waveform "
             "on black or your chosen image."
         ),
         "fmt.images_filter": "Images (*.png *.jpg *.jpeg *.webp *.bmp)",
@@ -656,7 +656,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
     },
     "es": {
         # -- app / wheel / tray -------------------------------------------
-        "app.name": "Tangerine",
+        "app.name": "Convertee",
         "wheel.convert": "Convertir",
         "wheel.tools": "Herramientas",
         "wheel.drop_file": "Suelta un archivo aquí",
@@ -665,19 +665,19 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "tray.nothing_active": "Nada activo",
         "tray.settings": "Ajustes...",
         "tray.check_updates": "Buscar actualizaciones...",
-        "tray.quit": "Salir de Tangerine",
+        "tray.quit": "Salir de Convertee",
         "tray.working": "Trabajando",
-        "tray.tooltip": "Tangerine",
+        "tray.tooltip": "Convertee",
         "tray.welcome": (
             "Arrastra archivos desde el Explorador manteniendo Shift para convertirlos.\n"
             "Mantén Alt+Shift para herramientas como Comprimir, Recortar o Censurar."
         ),
-        "tray.already_running": "Tangerine ya se está ejecutando.",
+        "tray.already_running": "Convertee ya se está ejecutando.",
         "tray.settings_unavailable": (
             "La ventana de ajustes no está disponible en esta compilación."
         ),
         "tray.update_message": (
-            "Tangerine {version} para Windows\n\n"
+            "Convertee {version}\n\n"
             "Esta es una compilación local, así que las actualizaciones se "
             "gestionan manualmente."
         ),
@@ -754,7 +754,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "progress.operation_failed": "La operación falló.",
         "progress.output_unconfirmed": "Terminado (salida no confirmada)",
         # -- settings window ----------------------------------------------
-        "settings.title": "Ajustes de Tangerine",
+        "settings.title": "Ajustes de Convertee",
         "settings.tab.general": "General",
         "settings.tab.wheels": "Ruedas",
         "settings.tab.formats": "Formatos",
@@ -830,12 +830,12 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "settings.size.1920": "Lado mayor 1920 px",
         "settings.size.1280": "Lado mayor 1280 px",
         "settings.about.title": (
-            "Tangerine {version} para Windows (compilación {build})"
+            "Convertee {version} (compilación {build})"
         ),
         "settings.about.blurb": (
-            "Un complemento de conversión por arrastre para el Explorador, "
-            "recreado a partir de la interacción de Tangerine en macOS: mantén "
-            "un modificador al arrastrar y suelta sobre un pétalo."
+            "Convierte archivos mientras los arrastras: mantén un modificador al "
+            "arrastrar y suelta sobre un pétalo. Basado en Tangerine for Windows (MIT) "
+            "y la app Tangerine de macOS."
         ),
         "settings.about.not_found": "no encontrado",
         "settings.about.ffmpeg": "FFmpeg",
@@ -848,7 +848,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "settings.about.restore": "Restaurar valores",
         "settings.restore.title": "Restaurar valores",
         "settings.restore.confirm": (
-            "¿Restaurar todos los ajustes de Tangerine a sus valores "
+            "¿Restaurar todos los ajustes de Convertee a sus valores "
             "predeterminados?"
         ),
         "settings.restore.done": (
@@ -1142,7 +1142,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "dlg.visualizer.bg_none": "Imagen de fondo: ninguna",
         "dlg.visualizer.bg_named": "Imagen de fondo: {name}",
         "dlg.visualizer.hint": (
-            "Toda la grabación se dibuja como una onda naranja Tangerine "
+            "Toda la grabación se dibuja como una onda naranja "
             "sobre negro o sobre tu imagen."
         ),
         "fmt.images_filter": "Imágenes (*.png *.jpg *.jpeg *.webp *.bmp)",
@@ -1362,7 +1362,7 @@ TRANSLATIONS["en"].update({
     "pdf.output.hint": "Existing files are preserved. Choose a new filename.",
     "pdf.output.exists": "This file already exists. Choose a new name; your existing file will be preserved.",
     "pdf.create": "Create PDF",
-    "pdf.instance.old": "The running Tangerine version cannot receive this request. Quit it from the tray, then start the new version.",
+    "pdf.instance.old": "The running Convertee version cannot receive this request. Quit it from the tray, then start the new version.",
     "shell.title": "File Explorer",
     "shell.hint": "Right-click images → Send to → Tangerine – Create PDF. The classic Tangerine PDF submenu is also registered.",
     "shell.repair": "Install / repair Explorer integration",
@@ -1400,7 +1400,7 @@ TRANSLATIONS["es"].update({
     "pdf.output.hint": "Se conservan los archivos existentes. Elige un nombre nuevo.",
     "pdf.output.exists": "Este archivo ya existe. Elige otro nombre; se conservará el archivo existente.",
     "pdf.create": "Crear PDF",
-    "pdf.instance.old": "La versión abierta de Tangerine no puede recibir esta solicitud. Ciérrala desde la bandeja y abre la versión nueva.",
+    "pdf.instance.old": "La versión abierta de Convertee no puede recibir esta solicitud. Ciérrala desde la bandeja y abre la versión nueva.",
     "shell.title": "Explorador de archivos",
     "shell.hint": "Clic derecho en imágenes → Enviar a → Tangerine – Crear PDF. También se registra el submenú clásico Tangerine PDF.",
     "shell.repair": "Instalar / reparar integración con Explorer",
@@ -1513,11 +1513,11 @@ if sys.platform != "win32":
         "pdf.order.received": "Order received from Files",
         "pdf.order.hint": "Files does not guarantee Ctrl-click chronology. Use Manual for an exact sequence.",
         "shell.title": "Files (Nautilus)",
-        "shell.hint": "Right-click files → Scripts → Tangerine → Convert…, Tools…, or Create PDF from images….",
+        "shell.hint": "Right-click files → Scripts → Convertee → Convert…, Tools…, or Create PDF from images….",
         "shell.repair": "Install / repair Files integration",
         "shell.source": "Files integration is not available here.",
-        "shell.ready": "Tangerine scripts are installed in Files (right-click → Scripts → Tangerine).",
-        "settings.general.autostart": "Start Tangerine when I log in",
+        "shell.ready": "Convertee scripts are installed in Files (right-click → Scripts → Convertee).",
+        "settings.general.autostart": "Start Convertee when I log in",
     })
     TRANSLATIONS["es"].update({
         "tray.welcome": (
@@ -1529,11 +1529,11 @@ if sys.platform != "win32":
         "pdf.order.received": "Orden recibido de Archivos",
         "pdf.order.hint": "Archivos no garantiza la cronología de Ctrl+clic. Usa Manual para fijar una secuencia exacta.",
         "shell.title": "Archivos (Nautilus)",
-        "shell.hint": "Clic derecho en archivos → Scripts → Tangerine → Convert…, Tools… o Create PDF from images….",
+        "shell.hint": "Clic derecho en archivos → Scripts → Convertee → Convert…, Tools… o Create PDF from images….",
         "shell.repair": "Instalar / reparar integración con Archivos",
         "shell.source": "La integración con Archivos no está disponible aquí.",
-        "shell.ready": "Los scripts de Tangerine están instalados en Archivos (clic derecho → Scripts → Tangerine).",
-        "settings.general.autostart": "Abrir Tangerine al iniciar sesión",
+        "shell.ready": "Los scripts de Convertee están instalados en Archivos (clic derecho → Scripts → Convertee).",
+        "settings.general.autostart": "Abrir Convertee al iniciar sesión",
     })
 
 

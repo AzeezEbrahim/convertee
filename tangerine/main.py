@@ -34,12 +34,12 @@ def _show_error(message: str) -> None:
         print(message, file=sys.stderr)
         try:
             if QApplication.instance() is not None:
-                QMessageBox.critical(None, "Tangerine", message)
+                QMessageBox.critical(None, "Convertee", message)
         except Exception:
             pass
         return
     try:
-        ctypes.windll.user32.MessageBoxW(None, message, "Tangerine", 0x10)
+        ctypes.windll.user32.MessageBoxW(None, message, "Convertee", 0x10)
     except Exception:
         pass
 
@@ -402,9 +402,9 @@ def _run():
     from .requests import RequestServer, forward_request, parse_request
     request = parse_request(sys.argv[1:])
     app = QApplication(sys.argv)
-    app.setApplicationName("Tangerine")
+    app.setApplicationName("Convertee")
     app.setApplicationVersion(paths.APP_VERSION)
-    app.setOrganizationName("Tangerine")
+    app.setOrganizationName("Convertee")
     app.setWindowIcon(QIcon(str(paths.icon_path())))
     app.setQuitOnLastWindowClosed(False)
     i18n.apply_number_locale()
@@ -419,7 +419,7 @@ def _run():
         log.error("No system tray available")
         return 1
 
-    lock = QLockFile(str(paths.data_dir() / "tangerine.lock"))
+    lock = QLockFile(str(paths.data_dir() / "convertee.lock"))
     if not lock.tryLock(0):
         if request is not None:
             # Another launch may hold the lock while its local pipe is starting.
@@ -429,7 +429,7 @@ def _run():
                 # A missing pipe fails immediately; allow the lock owner time
                 # to finish starting its server before the next attempt.
                 QThread.msleep(150)
-            log.error("The running Tangerine instance did not accept the image PDF request")
+            log.error("The running Convertee instance did not accept the image PDF request")
             _show_error(i18n.tr("pdf.instance.old"))
             return 2
         return _already_running(app)
@@ -468,10 +468,10 @@ def main():
         return _run()
     except Exception as exc:
         text = (
-            f"Tangerine failed to start: {exc}\n\n"
+            f"Convertee failed to start: {exc}\n\n"
             + "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
         )
-        log.error("Tangerine failed to start: %s", exc, exc_info=True)
+        log.error("Convertee failed to start: %s", exc, exc_info=True)
         _write_crash_log(text)
         _show_error(text)
         return 1

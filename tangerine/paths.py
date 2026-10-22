@@ -4,7 +4,7 @@ import os
 import sys
 from pathlib import Path
 
-APP_NAME = "Tangerine"
+APP_NAME = "Convertee"
 APP_VERSION = "1.10.2"
 APP_BUILD = 15
 
@@ -30,9 +30,22 @@ def data_dir() -> Path:
         path = Path(base) / APP_NAME
     else:
         base = os.environ.get("XDG_CONFIG_HOME") or str(Path.home() / ".config")
-        path = Path(base) / "tangerine"
+        path = Path(base) / "convertee"
+        _adopt_legacy_settings(Path(base) / "tangerine", path)
     path.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def _adopt_legacy_settings(legacy: Path, path: Path) -> None:
+    """Carry settings over from the pre-rename folder (~/.config/tangerine)."""
+    old, new = legacy / "settings.json", path / "settings.json"
+    if new.exists() or not old.is_file():
+        return
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+        new.write_bytes(old.read_bytes())
+    except OSError:
+        pass
 
 
 def settings_file() -> Path:
@@ -40,7 +53,7 @@ def settings_file() -> Path:
 
 
 def log_file() -> Path:
-    return data_dir() / "tangerine.log"
+    return data_dir() / "convertee.log"
 
 
 def icon_path() -> Path:

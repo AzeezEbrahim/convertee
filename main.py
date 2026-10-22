@@ -101,9 +101,9 @@ if "--version" in sys.argv:
     try:
         from tangerine.paths import APP_VERSION
 
-        print(f"Tangerine {APP_VERSION}")
+        print(f"Convertee {APP_VERSION}")
     except Exception:
-        print("Tangerine (version unknown)")
+        print("Convertee (version unknown)")
     raise SystemExit(0)
 
 if "--smoke-webengine" in sys.argv:
@@ -139,7 +139,7 @@ _prepare_frozen_qt_webengine()
 try:
     from tangerine.main import main
 except Exception as exc:
-    message = f"Tangerine failed to start: {exc}\n\n{traceback.format_exc()}"
+    message = f"Convertee failed to start: {exc}\n\n{traceback.format_exc()}"
     try:
         from tangerine.paths import data_dir
 
@@ -153,7 +153,7 @@ except Exception as exc:
 
         if os.environ.get("QT_QPA_PLATFORM") != "offscreen":
             if sys.platform == "win32":
-                ctypes.windll.user32.MessageBoxW(None, message, "Tangerine", 0x10)
+                ctypes.windll.user32.MessageBoxW(None, message, "Convertee", 0x10)
             else:
                 print(message, file=sys.stderr)
     except Exception:
